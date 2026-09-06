@@ -1,0 +1,678 @@
+:root {
+    --page-background: #f4f4f2;
+    --surface: #ffffff;
+    --simulation-background: #eeeeeb;
+
+    --text: #2f2f2f;
+    --muted-text: #686868;
+    --border: #d5d5d1;
+
+    --normal-box: #ffffff;
+    --normal-box-border: #c8c8c3;
+
+    --active-yellow: #f3c84b;
+    --active-yellow-border: #d2a72d;
+    --active-yellow-text: #4d3c08;
+
+    --inactive-grey: #c9c9c6;
+    --inactive-grey-border: #b2b2ae;
+    --inactive-grey-text: #747470;
+
+    --found-green: #76c893;
+    --found-green-border: #3d9560;
+    --found-green-text: #173d26;
+
+    --sidebar-background: #1e1e1e;
+    --sidebar-hover: #333333;
+    --dropdown-background: #2d2d2d;
+    --dropdown-link: #cccccc;
+}
+
+
+/* ---------------------------------
+   Global reset
+---------------------------------- */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-width: 0;
+    margin: 0;
+    padding: 24px;
+
+    color: var(--text);
+    background-color: var(--page-background);
+
+    font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    line-height: 1.5;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+
+/* ---------------------------------
+   Main layout
+---------------------------------- */
+
+.layout_container {
+    display: flex;
+    min-height: 100vh;
+}
+
+
+/* ---------------------------------
+   Sidebar and dropdown navigation
+---------------------------------- */
+
+.sidebar {
+    width: 20%;
+    max-width: 250px;
+    min-width: 180px;
+
+    padding: 20px 10px;
+
+    color: #ffffff;
+    background-color: var(--sidebar-background);
+
+    flex-shrink: 0;
+}
+
+.dropdown_btn {
+    width: 90%;
+
+    margin: 0;
+    padding: 10px;
+
+    color: #ffffff;
+    background-color: transparent;
+
+    border: none;
+
+    text-align: left;
+    font-size: 15px;
+
+    cursor: pointer;
+
+    transition:
+        background-color 150ms ease,
+        color 150ms ease;
+}
+
+.dropdown_btn:hover {
+    background-color: var(--sidebar-hover);
+}
+
+.dropdown_btn:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+}
+
+.dropdown_container {
+    display: none;
+
+    padding-left: 13px;
+
+    background-color: var(--dropdown-background);
+}
+
+.dropdown_container.show {
+    display: block;
+}
+
+.dropdown_container a {
+    display: block;
+
+    padding: 8px 10px;
+
+    color: var(--dropdown-link);
+    text-decoration: none;
+
+    transition:
+        background-color 150ms ease,
+        color 150ms ease;
+}
+
+.dropdown_container a:hover {
+    color: #ffffff;
+    background-color: #3a3a3a;
+}
+
+.dropdown_container a:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: -2px;
+}
+
+
+/* ---------------------------------
+   Explanation section
+---------------------------------- */
+
+#explanation_section {
+    width: 100%;
+    max-width: 1,200px;
+
+    margin: 0 auto;
+}
+
+#standard_bs_explanation {
+    width: 100%;
+    max-width: 80%;
+
+    margin: 0 0 32px;
+    padding: 0;
+
+    color: var(--text);
+    background-color: transparent;
+
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#standard_bs_explanation .title {
+    margin: 0 0 8px;
+
+    color: var(--text);
+
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: normal;
+}
+
+#standard_bs_explanation .text {
+    margin: 0 0 26px;
+
+    color: var(--muted-text);
+
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+
+/* ---------------------------------
+   Binary-search simulation
+---------------------------------- */
+
+#standard_bs_simulation {
+    width: 100%;
+    max-width: 1,200px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+    gap: 20px;
+    align-items: start;
+
+    margin: 0 auto;
+    padding: 18px;
+
+    background-color: var(--simulation-background);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.06);
+}
+
+#standard_bs_simulation .left-panel {
+    min-width: 0;
+}
+
+#standard_bs_simulation .right-panel {
+    width: 100%;
+    min-width: 0;
+}
+
+
+/* ---------------------------------
+   Input fields
+---------------------------------- */
+
+#standard_bs_simulation .field {
+    width: 100%;
+
+    margin: 0 0 16px;
+    padding: 0;
+
+    background-color: transparent;
+
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+#standard_bs_simulation .field:last-child {
+    margin-bottom: 0;
+}
+
+#standard_bs_simulation .field label {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--text);
+
+    font-size: 0.95rem;
+    font-weight: 650;
+}
+
+#standard_bs_simulation .field input,
+#standard_bs_simulation .field textarea,
+#standard_bs_simulation .field select {
+    width: 100%;
+    min-height: 42px;
+
+    padding: 9px 12px;
+
+    color: var(--text);
+    background-color: var(--surface);
+
+    border: 1px solid #bebeba;
+    border-radius: 7px;
+    outline: none;
+
+    transition:
+        border-color 150ms ease,
+        box-shadow 150ms ease;
+}
+
+#standard_bs_simulation .field textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+#standard_bs_simulation .field input::placeholder,
+#standard_bs_simulation .field textarea::placeholder {
+    color: #999994;
+}
+
+#standard_bs_simulation .field input:focus,
+#standard_bs_simulation .field textarea:focus,
+#standard_bs_simulation .field select:focus {
+    border-color: #858580;
+
+    box-shadow: 0 0 0 3px rgba(80, 80, 75, 0.12);
+}
+
+
+/* ---------------------------------
+   Small custom input classes
+---------------------------------- */
+
+.textfield {
+    width: 50px;
+    height: 20px;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.numberfield {
+    width: 100px;
+    height: 20px;
+
+    display: inline-block;
+}
+
+
+/* ---------------------------------
+   Warnings
+---------------------------------- */
+
+#standard_bs_simulation .warning-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    margin: 5px 0 0;
+}
+
+#standard_bs_simulation .warning-item {
+    display: block;
+
+    padding: 0;
+
+    color: #b23a3a;
+    background: transparent;
+
+    border: none;
+    border-radius: 0;
+
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+
+/* ---------------------------------
+   Checkboxes and parameter controls
+---------------------------------- */
+
+#standard_bs_simulation .parameters,
+#standard_bs_simulation .parameter,
+#standard_bs_simulation .checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin: 10px 0;
+}
+
+#standard_bs_simulation input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+
+    margin: 0;
+
+    accent-color: var(--active-yellow-border);
+
+    cursor: pointer;
+}
+
+#standard_bs_simulation input[type="number"] {
+    width: 100px;
+}
+
+
+/* ---------------------------------
+   Array display
+---------------------------------- */
+
+#standard_bs_simulation_display,
+.container {
+    width: 100%;
+    max-width: 500px;
+    max-height: 500px;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    align-content: flex-start;
+    gap: 10px;
+
+    margin: 18px 0;
+    padding: 15px;
+
+    overflow: auto;
+
+    background-color: var(--simulation-background);
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+}
+
+
+/* ---------------------------------
+   Array boxes
+
+   JavaScript creates:
+
+   class="array_value_container_active"
+
+   The animation then adds:
+
+   active_box
+   inactive_box
+   found_box
+---------------------------------- */
+
+#standard_bs_simulation_display .array_value_container_active {
+    width: 42px;
+    height: 42px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0;
+    padding: 5px;
+
+    color: var(--text);
+    background-color: var(--normal-box);
+
+    border: 1px solid var(--normal-box-border);
+    border-radius: 7px;
+
+    font-size: 1rem;
+    font-weight: 600;
+
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+
+    transition:
+        background-color 150ms ease,
+        border-color 150ms ease,
+        color 150ms ease,
+        transform 150ms ease,
+        opacity 150ms ease;
+}
+
+
+/* ---------------------------------
+   Currently examined box
+---------------------------------- */
+
+#standard_bs_simulation_display
+.array_value_container_active.active_box {
+    color: var(--active-yellow-text);
+    background-color: var(--active-yellow);
+
+    border-color: var(--active-yellow-border);
+
+    box-shadow: 0 2px 6px rgba(180, 140, 20, 0.25);
+
+    transform: translateY(-2px);
+}
+
+
+/* ---------------------------------
+   Eliminated box
+---------------------------------- */
+
+#standard_bs_simulation_display
+.array_value_container_active.inactive_box {
+    color: var(--inactive-grey-text);
+    background-color: var(--inactive-grey);
+
+    border-color: var(--inactive-grey-border);
+
+    box-shadow: none;
+    opacity: 0.8;
+
+    transform: none;
+}
+
+
+/* ---------------------------------
+   Found box
+---------------------------------- */
+
+#standard_bs_simulation_display
+.array_value_container_active.found_box {
+    color: var(--found-green-text);
+    background-color: var(--found-green);
+
+    border: 2px solid var(--found-green-border);
+
+    box-shadow: 0 2px 7px rgba(61, 149, 96, 0.25);
+
+    transform: scale(1.05);
+}
+
+
+/* ---------------------------------
+   Optional visually removed box
+
+   Use this only if you later add:
+
+   box.classList.add("removed_box");
+---------------------------------- */
+
+#standard_bs_simulation_display
+.array_value_container_active.removed_box {
+    display: none;
+}
+
+
+/* ---------------------------------
+   Buttons
+---------------------------------- */
+
+#standard_bs_simulation button,
+button {
+    min-height: 40px;
+
+    margin: 8px 6px 0 0;
+    padding: 8px 15px;
+
+    color: var(--text);
+    background-color: var(--surface);
+
+    border: 1px solid #bdbdb8;
+    border-radius: 7px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 150ms ease,
+        border-color 150ms ease,
+        transform 150ms ease;
+}
+
+#standard_bs_simulation button:hover,
+button:hover {
+    background-color: #e4e4df;
+    border-color: #92928c;
+}
+
+#standard_bs_simulation button:active,
+button:active {
+    transform: translateY(1px);
+}
+
+#standard_bs_simulation button:focus-visible,
+button:focus-visible {
+    outline: 3px solid rgba(80, 80, 75, 0.18);
+    outline-offset: 2px;
+}
+
+
+/* ---------------------------------
+   Monaco editors
+---------------------------------- */
+
+#standard_bs_code_display,
+#tryout_editor {
+    width: 100%;
+    height: 400px;
+
+    overflow: hidden;
+
+    border: 1px solid var(--border);
+    border-radius: 7px;
+}
+
+#standard_bs_code_display {
+    max-width: 100%;
+}
+
+#tryout_editor {
+    max-width: 100%;
+}
+
+
+/* ---------------------------------
+   Tryout section
+---------------------------------- */
+
+#tryout_section {
+    width: 100%;
+    max-width: 1,200px;
+
+    margin: 32px auto 0;
+}
+
+
+/* ---------------------------------
+   Responsive layout
+---------------------------------- */
+
+@media (max-width: 900px) {
+    body {
+        padding: 16px;
+    }
+
+    #standard_bs_simulation {
+        grid-template-columns: 1fr;
+    }
+
+    #standard_bs_simulation .right-panel {
+        width: 100%;
+    }
+
+    #standard_bs_explanation {
+        max-width: 100%;
+    }
+
+    #standard_bs_simulation_display,
+    .container {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 650px) {
+    body {
+        padding: 10px;
+    }
+
+    .layout_container {
+        display: block;
+    }
+
+    .sidebar {
+        width: 100%;
+        max-width: none;
+        min-width: 0;
+
+        margin-bottom: 16px;
+    }
+
+    #standard_bs_simulation {
+        padding: 12px;
+    }
+
+    #standard_bs_simulation_display,
+    .container {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    #standard_bs_simulation_display .array_value_container_active {
+        width: 38px;
+        height: 38px;
+
+        font-size: 0.9rem;
+    }
+
+    #standard_bs_code_display,
+    #tryout_editor {
+        height: 320px;
+    }
+}

@@ -1,0 +1,62 @@
+[
+    {
+        "id": "standard_bs_explanation_introduction",
+        "title": "Introduction",
+        "language": "English",
+        "text": [
+            "Binary search is one of the most fundamental algorithms in programming.",
+            "It is a searching algorithm used to find a particular value in a sorted collection, such as an array.",
+            "Instead of checking every element one at a time, it repeatedly examines the middle element and uses that comparison to decide which half of the collection could contain the target.",
+            "This allows binary search to find values much more efficiently than a linear search if the required conditions are met."
+        ]
+    },
+    {
+        "id": "standard_bs_explanation_process",
+        "title": "How it works",
+        "language": "English",
+        "text": [
+            "Instead of iterating through every element one by one, binary search exploits an attribute called monotonicity.",
+            "It begins by looking at the middle element of the sorted array. If the middle element is the target, the search is complete.",
+            "If the target is greater than the middle element, the algorithm continues searching only the right half because every value on the left is guaranteed to be too small.",
+            "If the target is smaller, it searches only the left half following the same principle. The process repeats until the target is found or no elements remain.",
+            "Because half of the remaining elements are removed after every comparison, binary search takes logarithmic time, written as O(log n).",
+            "For example, in an array of size 1'000'000'000, binary search checks at most about 30 elements, which is significantly fewer than 1'000'000'000."
+        ]
+    },
+    {
+        "id": "standard_bs_explanation_usage",
+        "title": "When to use it",
+        "language": "English",
+        "text": [
+            "Binary search can only be used when the data is ordered in a way that lets us eliminate half of the search space after each comparison.",
+            "The most common example is a sorted array of numbers, where smaller values appear before larger values.",
+            "The collection should also allow direct access to its middle elements.",
+            "Binary search is useful when searching through a large, already sorted collection.",
+            "It cannot be applied directly to an unsorted array. The data must be sorted first."
+        ]
+    },
+    {
+        "id": "standard_bs_code_python",
+        "title": "Python",
+        "language": "python",
+        "text": "def binary_search(a, target):\n    left = 0\n    right = len(a) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if a[mid] == target:\n            return mid\n        elif a[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1"
+    },
+    {
+        "id": "standard_bs_code_javascript",
+        "title": "JavaScript",
+        "language": "javascript",
+        "text": "function binary_search(a, target) {\n    let left = 0;\n    let right = a.length - 1;\n    while (left <= right) {\n        const mid = Math.floor((left + right) / 2);\n        if (a[mid] === target) {\n            return mid;\n        } else if (a[mid] < target) {\n            left = mid + 1;\n        } else {\n            right = mid - 1;\n        }\n    }\n    return -1;\n}"
+    },
+    {
+        "id": "standard_bs_code_cpp",
+        "title": "C++17",
+        "language": "cpp",
+        "text": "int binary_search(std::vector<int>& a, int target) {\n    int left = 0;\n    int right = a.size() - 1;\n    while (left <= right) {\n        int mid = (right + left) / 2;\n        if (a[mid] == target) {\n            return mid;\n        } else if (a[mid] < target) {\n            left = mid + 1;\n        } else {\n            right = mid - 1;\n        }\n    }\n    return -1;\n}"
+    },
+    {
+        "id": "tryout_template_python",
+        "title": "Python",
+        "language": "python",
+        "text": "def binary_search(a, target):\n    return -1"
+    }
+]
