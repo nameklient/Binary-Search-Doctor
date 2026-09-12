@@ -1,37 +1,33 @@
-import * as monaco from "monaco-editor";
 import "./style.css";
-
-import editorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
-import jsonWorker from "monaco-editor/esm/vs/language/json/json.worker?worker";
-import cssWorker from "monaco-editor/esm/vs/language/css/css.worker?worker";
-import htmlWorker from "monaco-editor/esm/vs/language/html/html.worker?worker";
-import tsWorker from "monaco-editor/esm/vs/language/typescript/ts.worker?worker";
 
 import { loadPyodide } from "pyodide";
 const pyodide = await loadPyodide({
     indexURL: "/pyodide/"
 });
 
-//console.log(pyodide.runPython("67"));
+//console.log(pyodide.runPython("67")); 
+import * as monaco from 'monaco-editor';
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
+import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
+import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 
+// Define the environment worker provider for Vite
 self.MonacoEnvironment = {
   getWorker(_, label) {
-    if (label === "json") {
+    if (label === 'json') {
       return new jsonWorker();
     }
-
-    if (label === "css" || label === "scss" || label === "less") {
+    if (label === 'css' || label === 'scss' || label === 'less') {
       return new cssWorker();
     }
-
-    if (label === "html" || label === "handlebars" || label === "razor") {
+    if (label === 'html' || label === 'handlebars' || label === 'razor') {
       return new htmlWorker();
     }
-
-    if (label === "typescript" || label === "javascript") {
+    if (label === 'typescript' || label === 'javascript') {
       return new tsWorker();
     }
-
     return new editorWorker();
   }
 };
@@ -39,8 +35,9 @@ self.MonacoEnvironment = {
 /**NOTE:
  * This is the absolute worst code that any human has written
  * I have no idea what I was thinking while designing this madness or whether I was thinking at all
- * Please do not touch anything or try to maintain this - it works
- * Hours wasted here: 17
+ * I shouldve chosen a better infrastructure for my code, maybe ill add documentation
+ * Please do not touch anything or try to maintain this - it seems to work
+ * Hours wasted here: 20
  */
 
 /*
@@ -48,6 +45,24 @@ TODO:
 - runs standard binary search on the array for the target
 - synchronizes with an animation
 */
+
+/**highlights a certain line of an editor
+ * 
+ */
+function handleLine(
+    editorId,
+    lineNumber
+){
+    const editor = document.querySelector("#" + editorId);
+    editor.deltaDecorations(currentDecor, [{
+        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+        options: {
+            className: 'highlighted-line',
+            isWholeLine: true
+        }
+    }]);
+}
+
 async function resetBoxes(
     boxes,
     left,
@@ -689,7 +704,8 @@ async function initExplanationSection(main_panel){
  * 
  * TODO:
  * - allow user to write code
- * - support JS, Python, C++
+ * - support Python
+ * 
  * - compile / run code
  * - display result
  * - same animation as simulation section

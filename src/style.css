@@ -9,7 +9,7 @@
 
     --normal-box: #ffffff;
     --normal-box-border: #c8c8c3;
-
+ 
     --active-yellow: #f3c84b;
     --active-yellow-border: #d2a72d;
     --active-yellow-text: #4d3c08;
@@ -609,6 +609,11 @@ button:focus-visible {
     margin: 32px auto 0;
 }
 
+.highlighted-line{
+    background-color: orange;
+    opacity: 0.5;
+}
+
 
 /* ---------------------------------
    Responsive layout
@@ -676,3 +681,4 @@ button:focus-visible {
         height: 320px;
     }
 }
+
