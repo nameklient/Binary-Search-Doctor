@@ -51,8 +51,11 @@ TODO:
  * 
  */
 
-async function executeProgram(){
-
+async function executeProgram(
+    display,
+    programString
+){
+    
 }
 
 function handleLine(
