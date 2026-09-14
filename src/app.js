@@ -40,6 +40,7 @@ self.MonacoEnvironment = {
  * Hours wasted here: 20
  */
 
+
 /*
 TODO:
 - runs standard binary search on the array for the target
@@ -49,6 +50,11 @@ TODO:
 /**highlights a certain line of an editor
  * 
  */
+
+async function executeProgram(){
+
+}
+
 function handleLine(
     editorId,
     lineNumber
@@ -80,10 +86,7 @@ async function resetBoxes(
     };
 }
 
-/**
- * TODO:
- * - fix bug with undefined classLists when duplicates are removed
- */
+
 async function markBoxesInactive(
     boxes,
     left,
@@ -351,7 +354,7 @@ function displayArray(
         rmDuplicates
     );
 
-    for(let i = 0; i < arr.length; i++){
+    for(let i = 0; i < prepared_array.length; i++){
         const val = prepared_array[Number(i)];
         if(isNaN(val)) throw new Error("displayArray: input includes an element that is not a number");
 
@@ -423,7 +426,8 @@ async function tryBtnClick(
          * TODO:
          * - fix NaN with delay
          */
-        let delayVal = (setDel) ? Math.max(0, Number(delay)) : 0;
+        let delayVal = (isNaN(Number(delay))) ? 0 : Number(delay);
+        delayVal = (setDel) ? Math.max(0, Number(delay)) : 0;
         console.log(`${setDel} ${delayVal}`);
         await renderArraySimulation(
             display,
@@ -569,6 +573,7 @@ async function initExplanationSection(main_panel){
         console.log("standard_bs_simulation_parameters_sort: sort toggled");
         try{
             const parsed_array = parseNumberArray(standard_bs_simulation_input_array.value);
+            
             displayArray(
                 parsed_array,
                 standard_bs_simulation_display,
@@ -614,7 +619,6 @@ async function initExplanationSection(main_panel){
         }
 
         standard_bs_simulation_running = true;
-
         try{
             tryBtnClick(
                 standard_bs_simulation_display,
@@ -623,7 +627,7 @@ async function initExplanationSection(main_panel){
                 standard_bs_simulation_parameters_sort.checked,
                 standard_bs_simulation_parameters_duplicates.checked,
                 standard_bs_simulation_parameters_delay.checked,
-                standard_bs_simulation_parameters_delay_input.value
+                array_input_delay.value
             );
         } finally{
             standard_bs_simulation_running = false;
