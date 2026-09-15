@@ -70,5 +70,23 @@
         "title": "Python",
         "language": "python",
         "text": "def binary_search(a, target):\n    return -1"
+    },
+    {
+        "id": "variation_introduction",
+        "title": "Common Variations",
+        "language": "English",
+        "text": "This website taught you the basics of the 'standard' binary search.\n However, it is important to note that while this is the most basic application of binary search, most problems cannot be solved by it.\n All binary search problems can be reduced to 2 underlying structures: first-true and last-true.\n The 'standard' binary search that finds an existing value in a sorted array, is really just a modified lower bound binary search.\n Below you can read a little about the more relevant and practical versions of binary search."
+    },
+    {
+        "id": "lower_bound_explanation",
+        "title": "Lower Bound",
+        "language": "English",
+        "text": "One of the most common applications of binary search, is finding the first true value in a monotone answer space.\n This will always be the first value satisfying some condition, iff that condition follows a FFFFTTTT pattern.\n One application would be trying to repeatedly find the least amount of days needed to complete a task that requires X units of time, where each day you can use time[i] amount of time.\n Instead of looping through the entire array for each X, which takes O(n) per query, giving O(n * q), we precompute the prefix sum* of the time array, and use lower bound binary search to find the first day / index, where the accumulated time >= X.\n Now we have reduced the time complexity to O(q log n), which is significantly better, especially for large input."
+    },
+    {
+        "id": "upper_bound_explanation",
+        "title": "Upper Bound",
+        "language": "English",
+        "text": "The counterpart to lower bound binary search is upper bound binary search.\n It answers the question: What is the last value that still satisfies a condition?\n Recall that this also only works in a monotone answer space.\n The answer must follow a TTTTFFFF pattern, and will not work without monotonicity.\n An example of its application would be repeatedly finding the most number of money one can earn in n days, if we are not allowed to earn more than X currency units.\n As you may have noticed, binary search is oftentimes paired with other techniques, especially for the check function.\n Here the naive bruteforce would be manually iterating and keeping a running sum until it exceeds our limit.\n Again, it would take O(n) operations, and is less than favorable if input is large.\n Upper bound can find the answer in less than 31 operations, given a reasonable input size."
     }
 ]

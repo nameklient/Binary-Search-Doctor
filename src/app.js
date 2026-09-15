@@ -755,7 +755,13 @@ async function initTryoutSection(main_panel){
  */
 async function initInformationSection(main_panel){
     const information_section = document.querySelector("#information_section");
-
+    
+    const variation_introduction_text = document.querySelector("#variation_introduction_text");
+    const lower_bound_explanation_text = document.querySelector("#lower_bound_explanation_text");
+    const upper_bound_explanation_text = document.querySelector("#upper_bound_explanation_text");
+    variation_introduction_text.textContent = await getText("variation_introduction");
+    lower_bound_explanation_text.textContent = await getText("lower_bound_explanation");
+    upper_bound_explanation_text.textContent = await getText("upper_bound_explanation");
 }
 
 
