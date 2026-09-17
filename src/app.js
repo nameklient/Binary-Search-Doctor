@@ -41,14 +41,10 @@ self.MonacoEnvironment = {
  */
 
 
-/*
-TODO:
-- runs standard binary search on the array for the target
-- synchronizes with an animation
-*/
-
-/**highlights a certain line of an editor
- * 
+/**TODO:
+ * - stop binary search if reset button is clicked
+ * - remove any highlights if reset button is clicked
+ * -  
  */
 
 async function executeProgram(
@@ -58,18 +54,31 @@ async function executeProgram(
     
 }
 
-function handleLine(
-    editorId,
-    lineNumber
-){
-    const editor = document.querySelector("#" + editorId);
-    editor.deltaDecorations(currentDecor, [{
-        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
-        options: {
-            className: 'highlighted-line',
-            isWholeLine: true
+/**highlights a certain line of an editor
+ * 
+ */
+
+
+function highlightLine(
+    editor,
+    startingLine,
+    endingLine
+){  
+    clearHighlights(editor);
+    editor.__activeDecorations = editor.deltaDecorations([], [
+        {
+            range: new monaco.Range(startingLine, 1, endingLine, 1),
+            options: {
+                className: 'highlighted-line',
+                isWholeLine: true
+            }
         }
-    }]);
+    ]);
+}
+
+function clearHighlights(editor){
+    const oldDecor = editor.__activeDecorations || [];
+    editor.__activeDecorations = editor.deltaDecorations(oldDecor, []);
 }
 
 async function resetBoxes(
@@ -89,7 +98,6 @@ async function resetBoxes(
     };
 }
 
-
 async function markBoxesInactive(
     boxes,
     left,
@@ -105,24 +113,49 @@ async function markBoxesInactive(
     };
 }
 
+//hre for readability
+function getStartLine(
+    targetLang,
+    actionId
+){
+    return targetLang[actionId][0];
+}
+
+//here for readability
+function getEndLine(
+    targetLang,
+    actionId
+){
+    return targetLang[actionId][1];
+}
+
+/**executes the entire binary search AND the animation
+ * idk how to sync them otherwise
+ * 
+ * TODO:
+ * - output each action to an output display
+ * - highlight the lines being executed based on language
+ * - add output 'terminal' to track which action is happening right now
+ * - add navigation bar
+ * - add the entire tryout section
+ */
+
 async function runStandardBinarySearch(
-    display,
+    display, 
     arr, 
     target,
-    delay
+    delay,
+    editor,
+    language
     ){
     if(!Array.isArray(arr)) throw new TypeError("runStandardBinarySearch: input was not an array");
     if(!Number.isInteger(Number(target))) throw new TypeError("runStandardBinarySearch: target was not an integer");
     if(isNaN(Number(delay)))  throw new TypeError("runStandardBinarySearch: delay was not a number");
+    if(typeof language !== "string")  throw new TypeError("runStandardBinarySearch: language was not a string");
     
-    const boxes = Array.from(
-        document.querySelectorAll(".array_value_container_active:not(.removed_box)")
-    );
-
-    if(boxes.length !== arr.length){
-        console.error(`The lengths of boxes and the array does not match ${boxes.length}, ${arr.length}`);
-    }
-
+    const boxes = Array.from( document.querySelectorAll(".array_value_container_active:not(.removed_box)") );
+    if(boxes.length !== arr.length) console.error(`The lengths of boxes and the array does not match ${boxes.length}, ${arr.length}`);
+    
     boxes.forEach((box) => {
         box.classList.remove(
             "found_box",
@@ -134,15 +167,64 @@ async function runStandardBinarySearch(
 
     target = Number(target);
 
-    const n = arr.length;
-    let lo = 0, hi = n-1;
+    const id = language + "_highlights";
+    const data_response = await fetch("/texts.json");
+    const data = await data_response.json();
+    const targetLang = data.find((text) => text.id === id);
+    if(!targetLang){
+        throw new Error(`getText: no text found with id ${id}`);
+    }
 
+    highlightLine(
+        editor,
+        getStartLine(targetLang, "CALL_FUNC"),
+        getEndLine(targetLang, "CALL_FUNC")
+    );
     await sleep(delay);
+
+    const n = arr.length;
+    let lo = 0;
+    highlightLine(
+        editor,
+        getStartLine(targetLang, "INIT_LO"),
+        getEndLine(targetLang, "INIT_LO")
+    );
+    await sleep(delay);
+
+    let hi = n-1;
+    highlightLine(
+        editor,
+        getStartLine(targetLang, "INIT_HI"),
+        getEndLine(targetLang, "INIT_HI")
+    );
+    await sleep(delay);
+
     while(lo <= hi){
-        let mid = Math.floor((lo + hi) / 2);
-        const val = Number(arr[mid]);
+        highlightLine(
+            editor,
+            getStartLine(targetLang, "WHILE_HEAD"),
+            getEndLine(targetLang, "WHILE_HEAD")
+        );
         await sleep(delay);
 
+        let mid = Math.floor((lo + hi) / 2);
+        highlightLine(
+            editor,
+            getStartLine(targetLang, "INIT_MID"),
+            getEndLine(targetLang, "INIT_MID")
+        );
+        await sleep(delay);
+
+        const val = Number(arr[mid]);
+
+
+
+        highlightLine(
+            editor,
+            getStartLine(targetLang, "IF"),
+            getEndLine(targetLang, "IF")
+        );
+        await sleep(delay);
         if(val === target){
             const found = boxes[mid];
             if(!found){ 
@@ -151,6 +233,12 @@ async function runStandardBinarySearch(
             }
 
             found.classList.add("found_box");
+
+            highlightLine(
+                editor,
+                getStartLine(targetLang, "RETURN_MID"),
+                getEndLine(targetLang, "RETURN_MID")
+            );
 
             await resetBoxes(
                 boxes, 
@@ -162,30 +250,62 @@ async function runStandardBinarySearch(
 
             await sleep(delay);
             return mid;
-        } else if(val < target){
+        } 
+        
+
+        highlightLine(
+            editor,
+            getStartLine(targetLang, "ELSEIF"),
+            getEndLine(targetLang, "ELSEIF")
+        );
+        await sleep(delay);
+        //had to change else if to if for highlights and output
+        if(val < target){
+            highlightLine(
+                editor,
+                getStartLine(targetLang, "UPDATE_LO"),
+                getEndLine(targetLang, "UPDATE_LO")
+            );
             await markBoxesInactive(
                 boxes, 
-                0, 
+                lo, 
                 mid, 
                 delay
             );
-
             lo = mid + 1;
-            await sleep(delay);
-        } else{
+            await sleep(0.75 * delay);
+            continue;
+        } 
+        
+        highlightLine(
+            editor,
+            getStartLine(targetLang, "ELSE"),
+            getEndLine(targetLang, "ELSE")
+        );
+        await sleep(delay);
+        if(val > target){
+            highlightLine(
+                editor,
+                getStartLine(targetLang, "UPDATE_HI"),
+                getEndLine(targetLang, "UPDATE_HI")
+            );
             await markBoxesInactive(
                 boxes, 
                 mid, 
                 hi, 
                 delay
             );
-
             hi = mid - 1;
-            await sleep(delay);
+            await sleep(0.75 * delay);
         }
-        await sleep(delay);
     }  
 
+    highlightLine(
+        editor,
+        getStartLine(targetLang, "RETURN_NEG"),
+        getEndLine(targetLang, "RETURN_NEG")
+    );
+    await sleep(delay);
     return -1;
 }
 
@@ -387,13 +507,17 @@ async function renderArraySimulation(
     display, 
     arr, 
     target, 
-    delay
+    delay,
+    editor,
+    language
 ){    
     const result = await runStandardBinarySearch(
         display,
         arr, 
         target, 
-        delay
+        delay,
+        editor,
+        language
     );
     console.log("renderArraySimulation: target was found at ", result);
 }
@@ -411,7 +535,9 @@ async function tryBtnClick(
     sortArr,
     rmDuplicates,
     setDel,
-    delay
+    delay,
+    editor,
+    language
 ){
     console.log("tryBtnClick: tryBtn was clicked");
     try{
@@ -425,10 +551,6 @@ async function tryBtnClick(
 
         if(sortArr) parsed_array.sort((a, b) => a - b);
 
-        /**
-         * TODO:
-         * - fix NaN with delay
-         */
         let delayVal = (isNaN(Number(delay))) ? 0 : Number(delay);
         delayVal = (setDel) ? Math.max(0, Number(delay)) : 0;
         console.log(`${setDel} ${delayVal}`);
@@ -436,7 +558,9 @@ async function tryBtnClick(
             display,
             parsed_array, 
             parsed_target,
-            delayVal
+            delayVal,
+            editor,
+            language
         );
     } catch(error){
         console.error("tryBtnClick: error while parsing", error);
@@ -616,6 +740,23 @@ async function initExplanationSection(main_panel){
     });
 
     let standard_bs_simulation_running = false;
+
+    const standard_bs_code_language = document.querySelector("#standard_bs_code_language");
+    //initialize the code that startr with python version
+    const standard_bs_code_python = await getText("standard_bs_code_python");
+    const standard_bs_code_editor = createEditor(
+        "standard_bs_code_editor",
+        true,
+        "python",
+        standard_bs_code_python
+    );
+    
+    standard_bs_code_language.addEventListener("change", (element) => {
+        if(!standard_bs_simulation_running){
+            switchLanguage(standard_bs_code_editor, "standard_bs_code_", element.target.value);
+        }
+    });
+
     standard_bs_simulation_tryBtn.addEventListener("click", async () => {
         if(standard_bs_simulation_running){
             return;
@@ -623,14 +764,16 @@ async function initExplanationSection(main_panel){
 
         standard_bs_simulation_running = true;
         try{
-            tryBtnClick(
+            await tryBtnClick(
                 standard_bs_simulation_display,
                 standard_bs_simulation_input_array,
                 standard_bs_simulation_input_target,
                 standard_bs_simulation_parameters_sort.checked,
                 standard_bs_simulation_parameters_duplicates.checked,
                 standard_bs_simulation_parameters_delay.checked,
-                array_input_delay.value
+                array_input_delay.value,
+                standard_bs_code_editor,
+                standard_bs_code_language.value
             );
         } finally{
             standard_bs_simulation_running = false;
@@ -670,38 +813,6 @@ async function initExplanationSection(main_panel){
             standard_bs_simulation_input_array_warnings
         );
     });
-    /*
-    TODO: 
-    add a section with a visualisation for an inputted array and the value searched for
-    upon clicking run_button update placeholder array and animation 
-    - only grows up to 50 elements
-    - a single element cannot exceed 3 digits or 999 / -999
-    - dont start simulation when there are errors
-
-    animation updates according to chosen speed
-    the current line of the code lights up 
-    eliminated elements turn grey
-    other elements stay white-blue ish
-    when a valid element is found it turns green
-
-    const standard_bs_visualisation = document.createElement("div");
-
-    */
-
-    const standard_bs_code_language = document.querySelector("#standard_bs_code_language");
-    //initialize the code that startr with python version
-    const standard_bs_code_python = await getText("standard_bs_code_python");
-    const standard_bs_code_display = createEditor(
-        "standard_bs_code_display",
-        true,
-        "python",
-        standard_bs_code_python
-    );
-    
-    standard_bs_code_language.addEventListener("change", (element) => {
-        switchLanguage(standard_bs_code_display, "standard_bs_code_", element.target.value);
-    });
-
 
     explanation_section.append(standard_bs_explanation, standard_bs_simulation);
     main_panel.append(explanation_section);
@@ -756,12 +867,18 @@ async function initTryoutSection(main_panel){
 async function initInformationSection(main_panel){
     const information_section = document.querySelector("#information_section");
     
+    const variations = document.querySelector("#variations");
     const variation_introduction_text = document.querySelector("#variation_introduction_text");
     const lower_bound_explanation_text = document.querySelector("#lower_bound_explanation_text");
     const upper_bound_explanation_text = document.querySelector("#upper_bound_explanation_text");
     variation_introduction_text.textContent = await getText("variation_introduction");
     lower_bound_explanation_text.textContent = await getText("lower_bound_explanation");
     upper_bound_explanation_text.textContent = await getText("upper_bound_explanation");
+
+    const practice_problems = document.querySelector("#practice_problems");
+
+    information_section.append(variations, practice_problems);
+    main_panel.append(information_section);
 }
 
 
