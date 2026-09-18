@@ -355,6 +355,13 @@ async function getText(id){
     return target.text;
 }
 
+function changeVisibility(
+    element, on
+){
+    if(on) element.style.display = "block";
+    else element.style.display = "none";
+}
+
 function splitInputIntoParts(input){
     if(typeof input !== "string") throw new TypeError("splitInputIntoParts: input was not a string");
 
@@ -733,16 +740,16 @@ async function initExplanationSection(main_panel){
     standard_bs_simulation_parameters_delay.addEventListener("change", (element) => {
         console.log("standard_bs_simulation_parameters_delay: delay toggled");
         if(element.target.checked){
-            standard_bs_simulation_parameters_delay_input.style.display = "block";
+            changeVisibility(standard_bs_simulation_parameters_delay_input, true);
         } else{
-            standard_bs_simulation_parameters_delay_input.style.display = "none";
+            changeVisibility(standard_bs_simulation_parameters_delay_input, false);
         }
     });
 
     let standard_bs_simulation_running = false;
 
     const standard_bs_code_language = document.querySelector("#standard_bs_code_language");
-    //initialize the code that startr with python version
+    //initialize the code with python version
     const standard_bs_code_python = await getText("standard_bs_code_python");
     const standard_bs_code_editor = createEditor(
         "standard_bs_code_editor",
