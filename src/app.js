@@ -44,7 +44,7 @@ self.MonacoEnvironment = {
 /**TODO:
  * - stop binary search if reset button is clicked
  * - remove any highlights if reset button is clicked
- * -  
+ * - 
  */
 
 async function executeProgram(
@@ -57,8 +57,6 @@ async function executeProgram(
 /**highlights a certain line of an editor
  * 
  */
-
-
 function highlightLine(
     editor,
     startingLine,
@@ -86,11 +84,12 @@ async function resetBoxes(
     left,
     right,
     mid,
-    delay
+    delay,
+    stopSignal
 ){
     for(let i = left; i <= right; i++){
         if(i === mid) continue;
-        await sleep(delay * 0.25); 
+        await sleep(delay * 0.25, stopSignal); 
         const box = boxes[i];
         if(!box) continue;
         box.classList.remove("active_box");
@@ -102,10 +101,11 @@ async function markBoxesInactive(
     boxes,
     left,
     right,
-    delay
+    delay,
+    stopSignal
 ){
     for(let i = left; i <= right; i++){
-        await sleep(delay * 0.1); 
+        await sleep(delay * 0.1, stopSignal); 
         const box = boxes[i];
         if(!box) continue;
         box.classList.remove("active_box");
@@ -129,13 +129,47 @@ function getEndLine(
     return targetLang[actionId][1];
 }
 
+//does waht it says
+function disableElement(element, disable){
+    if(disable) element.disabled = true;
+    else element.disabled = false;
+}
+
+//outputs action to terminal
+async function outputAction(
+    outputTerminal, 
+    action, 
+    arr,
+    lo, 
+    hi, 
+    mid, 
+    target
+){
+    const id = "standard_bs_event_" + action;
+    const rawString = String(await getText(id));
+
+    const actionLog = document.createElement("div");
+    actionLog.classList.add("output_string");
+
+    const formatted = rawString.replace("{left}", lo)
+            .replace("{right}", hi)
+            .replace("{mid}", mid)
+            .replace("{val}", arr[mid])
+            .replace("{target}", target)
+            .replace("{equal}", (arr[mid] != target ? "not" : ""))
+            .replace("{lessEqual}", (lo > hi ? "not" : ""))
+            .replace("{less}", (arr[mid] > target ? "not" : ""));
+    
+    actionLog.textContent = formatted;
+    outputTerminal.append(actionLog);
+    outputTerminal.scrollTop = outputTerminal.scrollHeight;
+}
+
 /**executes the entire binary search AND the animation
  * idk how to sync them otherwise
  * 
  * TODO:
- * - output each action to an output display
- * - highlight the lines being executed based on language
- * - add output 'terminal' to track which action is happening right now
+ * - add stop button (make sure abort controller handling is implemented)
  * - add navigation bar
  * - add the entire tryout section
  */
@@ -145,8 +179,10 @@ async function runStandardBinarySearch(
     arr, 
     target,
     delay,
+    outputTerminal,
     editor,
-    language
+    language,
+    stopSignal
     ){
     if(!Array.isArray(arr)) throw new TypeError("runStandardBinarySearch: input was not an array");
     if(!Number.isInteger(Number(target))) throw new TypeError("runStandardBinarySearch: target was not an integer");
@@ -167,146 +203,165 @@ async function runStandardBinarySearch(
 
     target = Number(target);
 
-    const id = language + "_highlights";
-    const data_response = await fetch("/texts.json");
-    const data = await data_response.json();
-    const targetLang = data.find((text) => text.id === id);
-    if(!targetLang){
-        throw new Error(`getText: no text found with id ${id}`);
-    }
-
-    highlightLine(
-        editor,
-        getStartLine(targetLang, "CALL_FUNC"),
-        getEndLine(targetLang, "CALL_FUNC")
-    );
-    await sleep(delay);
-
-    const n = arr.length;
-    let lo = 0;
-    highlightLine(
-        editor,
-        getStartLine(targetLang, "INIT_LO"),
-        getEndLine(targetLang, "INIT_LO")
-    );
-    await sleep(delay);
-
-    let hi = n-1;
-    highlightLine(
-        editor,
-        getStartLine(targetLang, "INIT_HI"),
-        getEndLine(targetLang, "INIT_HI")
-    );
-    await sleep(delay);
-
-    while(lo <= hi){
-        highlightLine(
-            editor,
-            getStartLine(targetLang, "WHILE_HEAD"),
-            getEndLine(targetLang, "WHILE_HEAD")
-        );
-        await sleep(delay);
-
-        let mid = Math.floor((lo + hi) / 2);
-        highlightLine(
-            editor,
-            getStartLine(targetLang, "INIT_MID"),
-            getEndLine(targetLang, "INIT_MID")
-        );
-        await sleep(delay);
-
-        const val = Number(arr[mid]);
-
-
-
-        highlightLine(
-            editor,
-            getStartLine(targetLang, "IF"),
-            getEndLine(targetLang, "IF")
-        );
-        await sleep(delay);
-        if(val === target){
-            const found = boxes[mid];
-            if(!found){ 
-                console.error(`No box exists at ${mid}`);
-                return -1;
-            }
-
-            found.classList.add("found_box");
-
-            highlightLine(
-                editor,
-                getStartLine(targetLang, "RETURN_MID"),
-                getEndLine(targetLang, "RETURN_MID")
-            );
-
-            await resetBoxes(
-                boxes, 
-                0, 
-                n-1, 
-                mid, 
-                delay
-            );
-
-            await sleep(delay);
-            return mid;
-        } 
-        
-
-        highlightLine(
-            editor,
-            getStartLine(targetLang, "ELSEIF"),
-            getEndLine(targetLang, "ELSEIF")
-        );
-        await sleep(delay);
-        //had to change else if to if for highlights and output
-        if(val < target){
-            highlightLine(
-                editor,
-                getStartLine(targetLang, "UPDATE_LO"),
-                getEndLine(targetLang, "UPDATE_LO")
-            );
-            await markBoxesInactive(
-                boxes, 
-                lo, 
-                mid, 
-                delay
-            );
-            lo = mid + 1;
-            await sleep(0.75 * delay);
-            continue;
-        } 
-        
-        highlightLine(
-            editor,
-            getStartLine(targetLang, "ELSE"),
-            getEndLine(targetLang, "ELSE")
-        );
-        await sleep(delay);
-        if(val > target){
-            highlightLine(
-                editor,
-                getStartLine(targetLang, "UPDATE_HI"),
-                getEndLine(targetLang, "UPDATE_HI")
-            );
-            await markBoxesInactive(
-                boxes, 
-                mid, 
-                hi, 
-                delay
-            );
-            hi = mid - 1;
-            await sleep(0.75 * delay);
+    try{
+        const id = language + "_highlights";
+        const data_response = await fetch("/texts.json");
+        const data = await data_response.json();
+        const targetLang = data.find((text) => text.id === id);
+        if(!targetLang){
+            throw new Error(`getText: no text found with id ${id}`);
         }
-    }  
 
-    highlightLine(
-        editor,
-        getStartLine(targetLang, "RETURN_NEG"),
-        getEndLine(targetLang, "RETURN_NEG")
-    );
-    await sleep(delay);
-    return -1;
+        highlightLine(
+            editor,
+            getStartLine(targetLang, "CALL_FUNC"),
+            getEndLine(targetLang, "CALL_FUNC")
+        );
+        await outputAction(outputTerminal, "CALL_FUNC", arr, -1, -1, -1, target);
+        await sleep(delay, stopSignal);
+
+        const n = arr.length;
+        let lo = 0;
+        highlightLine(
+            editor,
+            getStartLine(targetLang, "INIT_LO"),
+            getEndLine(targetLang, "INIT_LO")
+        );
+        await outputAction(outputTerminal, "INIT_LO", arr, lo, n-1, n-1, target);
+        await sleep(delay, stopSignal);
+
+        let hi = n-1;
+        highlightLine(
+            editor,
+            getStartLine(targetLang, "INIT_HI"),
+            getEndLine(targetLang, "INIT_HI")
+        );
+        await outputAction(outputTerminal, "INIT_HI", arr, lo, hi, n-1, target);
+        await sleep(delay, stopSignal);
+
+        while(lo <= hi){
+            highlightLine(
+                editor,
+                getStartLine(targetLang, "WHILE_HEAD"),
+                getEndLine(targetLang, "WHILE_HEAD")
+            );
+            await outputAction(outputTerminal, "WHILE_HEAD", arr, lo, hi, n-1, target);
+            await sleep(delay, stopSignal);
+
+            let mid = Math.floor((lo + hi) / 2);
+            highlightLine(
+                editor,
+                getStartLine(targetLang, "INIT_MID"),
+                getEndLine(targetLang, "INIT_MID")
+            );
+            await outputAction(outputTerminal, "INIT_MID", arr, lo, hi, mid, target);
+            await sleep(delay, stopSignal);
+
+            const val = Number(arr[mid]);
+
+            highlightLine(
+                editor,
+                getStartLine(targetLang, "IF"),
+                getEndLine(targetLang, "IF")
+            );
+            await outputAction(outputTerminal, "IF", arr, lo, hi, mid, target);
+            await sleep(delay, stopSignal);
+            if(val === target){
+                const found = boxes[mid];
+                if(!found){ 
+                    console.error(`No box exists at ${mid}`);
+                    return -1;
+                }
+
+                found.classList.add("found_box");
+
+                highlightLine(
+                    editor,
+                    getStartLine(targetLang, "RETURN_MID"),
+                    getEndLine(targetLang, "RETURN_MID")
+                );
+                await outputAction(outputTerminal, "RETURN_MID", arr, lo, hi, mid, target);
+                await resetBoxes(
+                    boxes, 
+                    0, 
+                    n-1, 
+                    mid, 
+                    delay,
+                    stopSignal
+                );
+
+                await sleep(delay, stopSignal);
+                return mid;
+            } 
+            
+            highlightLine(
+                editor,
+                getStartLine(targetLang, "ELSEIF"),
+                getEndLine(targetLang, "ELSEIF")
+            );
+            await outputAction(outputTerminal, "ELSEIF", arr, lo, hi, mid, target);
+            await sleep(delay, stopSignal);
+            //had to change else if to if for highlights and output
+            if(val < target){
+                highlightLine(
+                    editor,
+                    getStartLine(targetLang, "UPDATE_LO"),
+                    getEndLine(targetLang, "UPDATE_LO")
+                );
+                await outputAction(outputTerminal, "UPDATE_LO", arr, lo, hi, mid, target);
+                await markBoxesInactive(
+                    boxes, 
+                    lo, 
+                    mid, 
+                    delay,
+                    stopSignal
+                );
+                lo = mid + 1;
+                await sleep(0.75 * delay, stopSignal);
+                continue;
+            } 
+            
+            highlightLine(
+                editor,
+                getStartLine(targetLang, "ELSE"),
+                getEndLine(targetLang, "ELSE")
+            );
+            await outputAction(outputTerminal, "ELSE", arr, lo, hi, mid, target);
+            await sleep(delay, stopSignal);
+            if(val > target){
+                highlightLine(
+                    editor,
+                    getStartLine(targetLang, "UPDATE_HI"),
+                    getEndLine(targetLang, "UPDATE_HI")
+                );
+                await outputAction(outputTerminal, "UPDATE_HI", arr, lo, hi, mid, target);
+                await markBoxesInactive(
+                    boxes, 
+                    mid, 
+                    hi, 
+                    delay,
+                    stopSignal
+                );
+                hi = mid - 1;
+                await sleep(0.75 * delay, stopSignal);
+            }
+        }  
+
+        highlightLine(
+            editor,
+            getStartLine(targetLang, "RETURN_NEG"),
+            getEndLine(targetLang, "RETURN_NEG")
+        );
+        await outputAction(outputTerminal, "RETURN_NEG", arr, n-1, n-1, n-1, target);
+        await sleep(delay, stopSignal);
+        return -1;
+    } catch(error){
+        if(error.name === 'AbortError'){
+            console.log("Visualisation stopped");
+            return -1;
+        }
+        throw error;
+    }
 }
 
 function createEditor(editorId, readOnly, language, code){
@@ -342,7 +397,19 @@ async function switchLanguage(editor, idTemplate, language){
     }
 }
 
-const sleep = (s) => new Promise(resolve => setTimeout(resolve, s * 1000));
+//const sleep = (s) => new Promise(resolve => setTimeout(resolve, s * 1000));
+function sleep(ms, signal){
+    return new Promise((resolve, reject) => {
+        if(signal?.aborted){
+            return reject(new DOMException("Aborted", "AbortError"));
+        }
+        const timer = setTimeout(resolve, 1000 * ms);
+        signal?.addEventListener("abort", () => {
+            clearTimeout(timer);
+            reject(new DOMException("Aborted", "AbortError"));
+        }, {once: true});
+    });
+}
 
 async function getText(id){
     const text_response = await fetch("/texts.json");
@@ -421,6 +488,12 @@ function updateWarnings(inputValue, warning_container){
         warning.textContent = condition.message;
         warning_container.append(warning);
     });
+    console.log(`updateWarnings called, ${activeWarnings.length}`)
+    return activeWarnings.length;
+}
+
+function cntWarnings(){
+
 }
 
 function parseNumberArray(input){
@@ -510,23 +583,27 @@ TODO:
 - allows for setting of execution delay
 - allows for automatic sorting of the array
 */
-async function renderArraySimulation(
+async function startVisualisation(
     display, 
     arr, 
     target, 
     delay,
+    outputTerminal,
     editor,
-    language
+    language,
+    stopController
 ){    
     const result = await runStandardBinarySearch(
         display,
         arr, 
         target, 
         delay,
+        outputTerminal,
         editor,
-        language
+        language,
+        stopController.signal
     );
-    console.log("renderArraySimulation: target was found at ", result);
+    console.log("startVisualisation: target was found at ", result);
 }
 
 /**Executes the array simulation using the given paremeters
@@ -543,8 +620,10 @@ async function tryBtnClick(
     rmDuplicates,
     setDel,
     delay,
+    outputTerminal,
     editor,
-    language
+    language,
+    stopController
 ){
     console.log("tryBtnClick: tryBtn was clicked");
     try{
@@ -561,13 +640,15 @@ async function tryBtnClick(
         let delayVal = (isNaN(Number(delay))) ? 0 : Number(delay);
         delayVal = (setDel) ? Math.max(0, Number(delay)) : 0;
         console.log(`${setDel} ${delayVal}`);
-        await renderArraySimulation(
+        await startVisualisation(
             display,
             parsed_array, 
             parsed_target,
             delayVal,
+            outputTerminal,
             editor,
-            language
+            language,
+            stopController
         );
     } catch(error){
         console.error("tryBtnClick: error while parsing", error);
@@ -584,7 +665,9 @@ function resetBtnClick(
     sortArr,
     rmDuplicates,
     setDel,
-    delayContainer
+    delayContainer,
+    outputTerminal,
+    editor
 ){
     console.log("resetBtnClick: resetBtn was clicked");
     array.value = "";
@@ -595,7 +678,9 @@ function resetBtnClick(
     delayContainer.style.display = "none";
     delayContainer.value = 0.5;
     
-    display.replaceChildren();  
+    display.replaceChildren();
+    outputTerminal.replaceChildren();
+    clearHighlights(editor);
 }
 
 /* Generates a random array for the standard binary search simulation
@@ -630,6 +715,14 @@ function randomBtnClick(
     }
 }
 
+
+function stopVisualisation(controller){
+    if(controller){
+        controller.abort();
+        controller = null;
+    }
+}
+
 async function initExplanationSection(main_panel){
     const explanation_section = document.querySelector("#explanation_section");
 
@@ -657,28 +750,31 @@ async function initExplanationSection(main_panel){
     const standard_bs_simulation_input_target = document.querySelector("#array_input_target");
     const standard_bs_simulation_input_target_warnings = document.querySelector("#array_input_target_warnings");
 
+    let input_array_warnings = 0, input_target_warnings = 0;
+
     const standard_bs_simulation_display = document.querySelector("#standard_bs_simulation_display");
     const standard_bs_simulation_tryBtn = document.querySelector("#standard_bs_simulation_tryBtn");
     const standard_bs_simulation_resetBtn = document.querySelector("#standard_bs_simulation_resetBtn");
     const standard_bs_simulation_randomBtn = document.querySelector("#standard_bs_simulation_randomBtn");
+    const standard_bs_simulation_stopBtn = document.querySelector("#standard_bs_simulation_stopBtn");
 
     const standard_bs_simulation_parameters_sort = document.querySelector("#standard_bs_simulation_parameters_sort");
     const standard_bs_simulation_parameters_duplicates = document.querySelector("#standard_bs_simulation_parameters_duplicates");
     const standard_bs_simulation_parameters_delay = document.querySelector("#standard_bs_simulation_parameters_delay");
     const standard_bs_simulation_parameters_delay_input = document.querySelector("#standard_bs_simulation_parameters_delay_input");  
 
-    updateWarnings(
+    input_array_warnings = updateWarnings(
         standard_bs_simulation_input_array.value, 
         standard_bs_simulation_input_array_warnings
     );
 
-    updateWarnings(
+    input_target_warnings = updateWarnings(
         standard_bs_simulation_input_target.value, 
         standard_bs_simulation_input_target_warnings
     );
 
     standard_bs_simulation_input_array.addEventListener("input", (element) => {
-        updateWarnings(
+        input_array_warnings = updateWarnings(
             element.target.value, 
             standard_bs_simulation_input_array_warnings
         );
@@ -697,7 +793,7 @@ async function initExplanationSection(main_panel){
     });
 
     standard_bs_simulation_input_target.addEventListener("input", (element) => {
-        updateWarnings(
+        input_target_warnings = updateWarnings(
             element.target.value, 
             standard_bs_simulation_input_target_warnings
         );
@@ -734,9 +830,6 @@ async function initExplanationSection(main_panel){
         }
     });
 
-    /**TODO:
-     * implement helper function to toggle visibility of an element
-     */
     standard_bs_simulation_parameters_delay.addEventListener("change", (element) => {
         console.log("standard_bs_simulation_parameters_delay: delay toggled");
         if(element.target.checked){
@@ -749,6 +842,7 @@ async function initExplanationSection(main_panel){
     let standard_bs_simulation_running = false;
 
     const standard_bs_code_language = document.querySelector("#standard_bs_code_language");
+    //disableElement(standard_bs_code_language, false);
     //initialize the code with python version
     const standard_bs_code_python = await getText("standard_bs_code_python");
     const standard_bs_code_editor = createEditor(
@@ -760,16 +854,33 @@ async function initExplanationSection(main_panel){
     
     standard_bs_code_language.addEventListener("change", (element) => {
         if(!standard_bs_simulation_running){
-            switchLanguage(standard_bs_code_editor, "standard_bs_code_", element.target.value);
+            switchLanguage(
+                standard_bs_code_editor, 
+                "standard_bs_code_", 
+                element.target.value
+            );
         }
     });
 
+    const standard_bs_simulation_output = document.querySelector("#standard_bs_simulation_output");
+
+    let stopAnimationController = null;
+
     standard_bs_simulation_tryBtn.addEventListener("click", async () => {
+        if(input_array_warnings > 0 || input_target_warnings > 0){
+            console.warn(`Cannot start simulation. Please consider the warning(s).`);
+            return;
+        }
+
         if(standard_bs_simulation_running){
+            console.warn(`The simulation is still running. Please wait until it has finished before running it again.`);
             return;
         }
 
         standard_bs_simulation_running = true;
+        stopAnimationController = new AbortController();
+        standard_bs_simulation_output.replaceChildren();
+        disableElement(standard_bs_code_language, true);
         try{
             await tryBtnClick(
                 standard_bs_simulation_display,
@@ -779,20 +890,28 @@ async function initExplanationSection(main_panel){
                 standard_bs_simulation_parameters_duplicates.checked,
                 standard_bs_simulation_parameters_delay.checked,
                 array_input_delay.value,
+                standard_bs_simulation_output,
                 standard_bs_code_editor,
-                standard_bs_code_language.value
+                standard_bs_code_language.value,
+                stopAnimationController
             );
         } finally{
             standard_bs_simulation_running = false;
+            stopVisualisation(stopAnimationController);
+            disableElement(standard_bs_code_language, false);
         }
 
-        updateWarnings(
+        input_array_warnings = updateWarnings(
             standard_bs_simulation_input_array.value,
             standard_bs_simulation_input_array_warnings
         );
     });
 
     standard_bs_simulation_resetBtn.addEventListener("click", () => {
+        if(standard_bs_simulation_running){
+            stopVisualisation(stopAnimationController);
+        }
+
         resetBtnClick(
             standard_bs_simulation_display,
             standard_bs_simulation_input_array,
@@ -801,24 +920,40 @@ async function initExplanationSection(main_panel){
             standard_bs_simulation_parameters_duplicates,
             standard_bs_simulation_parameters_delay,
             standard_bs_simulation_parameters_delay_input,
+            standard_bs_simulation_output,
+            standard_bs_code_editor
         );
-        updateWarnings(
+        input_array_warnings = updateWarnings(
             standard_bs_simulation_input_array.value,
             standard_bs_simulation_input_array_warnings
         );
     });
 
     standard_bs_simulation_randomBtn.addEventListener("click", () => {
+        if(standard_bs_simulation_running){
+            stopVisualisation(stopAnimationController);
+        }
+
         randomBtnClick(
             standard_bs_simulation_display,
             standard_bs_simulation_input_array,
             standard_bs_simulation_parameters_sort.checked,
             standard_bs_simulation_parameters_duplicates.checked
         );
-        updateWarnings(
+        input_array_warnings = updateWarnings(
             standard_bs_simulation_input_array.value,
             standard_bs_simulation_input_array_warnings
         );
+    });
+
+    standard_bs_simulation_stopBtn.addEventListener("click", () => {
+        if(!standard_bs_simulation_running){
+            console.warn(`stopBtn: simulation isn't running`);
+            return;
+        }
+        if(standard_bs_simulation_running){
+            stopVisualisation(stopAnimationController);
+        }
     });
 
     explanation_section.append(standard_bs_explanation, standard_bs_simulation);
@@ -854,22 +989,13 @@ async function initTryoutSection(main_panel){
     tryout_editor_language.addEventListener("change", (element) => {
         switchLanguage(tryout_editor, "tryout_template_", element.target.value);
     });
-    /*
-    TODO:
-    - let user input array
-    - let user write binary search function in Python
-    - reads and parses code
-    - 
-    */
 
     main_panel.append(tryout_section);
 }
 
-/** provides information about related topics
+/**initialises the information section 
+ * provides information about related topics
  * 
- *  TODO:
- *  - section about lower/upper bound
- *  - section with links to practice problems
  */
 async function initInformationSection(main_panel){
     const information_section = document.querySelector("#information_section");

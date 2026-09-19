@@ -26,14 +26,16 @@
 
     <section id="explanation_section">
         <article id="standard_bs_explanation">
-            <h2 class="title">What is binary search?</h2>
-            <p class="text" id="standard_bs_explanation_introduction">Loading...</p>
+            <div class="container">
+                <h2 class="title">What is binary search?</h2>
+                <p class="text" id="standard_bs_explanation_introduction">Loading...</p>
 
-            <h2 class="title">How does it work?</h2>
-            <p class="text" id="standard_bs_explanation_process">Loading...</p>
+                <h2 class="title">How does it work?</h2>
+                <p class="text" id="standard_bs_explanation_process">Loading...</p>
 
-            <h2 class="title">When is it used?</h2>
-            <p class="text" id="standard_bs_explanation_usage">Loading...</p>
+                <h2 class="title">When is it used?</h2>
+                <p class="text" id="standard_bs_explanation_usage">Loading...</p>
+            </div>
         </article>
         <div id="standard_bs_simulation">
             <div class="left-panel">
@@ -77,11 +79,17 @@
                 <button data-function="Try" id="standard_bs_simulation_tryBtn">Try</button>
                 <button data-function="Reset" id="standard_bs_simulation_resetBtn">Reset</button>
                 <button data-function="Generate" id="standard_bs_simulation_randomBtn">Generate Random Array</button>
+                <button data-function="Stop" id="standard_bs_simulation_stopBtn">Stop</button>
                 <div class="container" id="standard_bs_simulation_display">
-
             </div>
             
-            <div class="right-panel">
+            <div class="right-panel, container">
+                <label>
+                    <div class="outputTerminal" id="standard_bs_simulation_output"></div>
+                    Actions
+                </label>
+            </div>
+            <div class="container">
                 <label for="languageSelect">
                     Language:
                     <select id="standard_bs_code_language">

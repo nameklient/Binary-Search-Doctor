@@ -57,13 +57,85 @@
         "id": "standard_bs_code_java",
         "title": "Java",
         "language": "java",
-        "text": "public class Main {\n    public static int binarySearch(int[] a, int target) {\n        int left = 0;\n        int right = a.length - 1;\n        while (left <= right) {\n            int mid = left + (right - left) / 2;\n            if (a[mid] == target) {\n                return mid;\n            } else if (a[mid] < target) {\n                left = mid + 1;\n            } else {\n                right = mid - 1;\n            }\n        }\n        return -1;\n    }\n}"
+        "text": "public class Main {\n    public static int binarySearch(int[] a, int target) {\n        int left = 0;\n        int right = a.length - 1;\n        while (left <= right) {\n            int mid = (left + right) / 2;\n            if (a[mid] == target) {\n                return mid;\n            } else if (a[mid] < target) {\n                left = mid + 1;\n            } else {\n                right = mid - 1;\n            }\n        }\n        return -1;\n    }\n}"
     },
     {
         "id": "standard_bs_code_rust",
         "title": "Rust",
         "language": "rust",
-        "text": "fn binary_search(a: &[i32], target: i32) -> i32 {\n    let mut left: usize = 0;\n    if a.is_empty() return -1;\n    let mut right: usize = a.len() - 1;\n    while left <= right {\n        let mid = left + (right - left) / 2;\n        if a[mid] == target {\n            return mid as i32;\n        } else if a[mid] < target {\n            left = mid + 1;\n        } else {\n            if mid == 0 {\n                break;\n            }\n            right = mid - 1;\n        }\n    }\n    -1\n}"
+        "text": "fn binary_search(a: &[i32], target: i32) -> i32 {\n    let mut left: usize = 0;\n    if a.is_empty() return -1;\n    let mut right: usize = a.len() - 1;\n    while left <= right {\n        let mid = (left + right) / 2;\n        if a[mid] == target {\n            return mid as i32;\n        } else if a[mid] < target {\n            left = mid + 1;\n        } else {\n            if mid == 0 {\n                break;\n            }\n            right = mid - 1;\n        }\n    }\n    -1\n}"
+    },
+    {
+        "id": "standard_bs_event_CALL_FUNC",
+        "title": "CALL_FUNC",
+        "language": "English",
+        "text": "called the function binary_search()"
+    },
+    {
+        "id": "standard_bs_event_INIT_LO",
+        "title": "INIT_LO",
+        "language": "English",
+        "text": "left pointer = {left}"
+    },
+    {
+        "id": "standard_bs_event_INIT_HI",
+        "title": "INIT_HI",
+        "language": "English",
+        "text": "right pointer = {right}"
+    },
+    {
+        "id": "standard_bs_event_WHILE_HEAD",
+        "title": "WHILE_HEAD",
+        "language": "English",
+        "text": "{left} is {lessEqual} <= {right}"
+    },
+    {
+        "id": "standard_bs_event_INIT_MID",
+        "title": "INIT_MID",
+        "language": "English",
+        "text": "middle index = {mid}"
+    },
+    {
+        "id": "standard_bs_event_IF",
+        "title": "IF",
+        "language": "English",
+        "text": "{val} is {equal} == {target}"
+    },
+    {
+        "id": "standard_bs_event_RETURN_MID",
+        "title": "RETURN_MID",
+        "language": "English",
+        "text": "returning {mid}"
+    },
+    {
+        "id": "standard_bs_event_ELSEIF",
+        "title": "ELSEIF",
+        "language": "English",
+        "text": "{val} is {less} < {target}"
+    },
+    {
+        "id": "standard_bs_event_UPDATE_LO",
+        "title": "UPDATE_LO",
+        "language": "English",
+        "text": "left = {mid} + 1"
+    },
+    {
+        "id": "standard_bs_event_ELSE",
+        "title": "ELSE",
+        "language": "English",
+        "text": "{val} is > {target}"
+    },
+    {
+        "id": "standard_bs_event_UPDATE_HI",
+        "title": "UPDATE_HI",
+        "language": "English",
+        "text": "right = {mid} - 1"
+    },
+    {
+        "id": "standard_bs_event_RETURN_NEG",
+        "title": "RETURN_NEG",
+        "language": "English",
+        "text": "{target} not found"
     },
     {
         "id": "tryout_template_python",
