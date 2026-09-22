@@ -37,9 +37,8 @@ self.MonacoEnvironment = {
  * I have no idea what I was thinking while designing this madness or whether I was thinking at all
  * I shouldve chosen a better infrastructure for my code, maybe ill add documentation
  * Please do not touch anything or try to maintain this - it seems to work
- * Hours wasted here: 20
+ * Hours wasted here: 24
  */
-
 
 /**TODO:
  * - stop binary search if reset button is clicked
@@ -47,12 +46,6 @@ self.MonacoEnvironment = {
  * - 
  */
 
-async function executeProgram(
-    display,
-    programString
-){
-    
-}
 
 /**highlights a certain line of an editor
  * 
@@ -152,13 +145,13 @@ async function outputAction(
     actionLog.classList.add("output_string");
 
     const formatted = rawString.replace("{left}", lo)
-            .replace("{right}", hi)
-            .replace("{mid}", mid)
-            .replace("{val}", arr[mid])
-            .replace("{target}", target)
-            .replace("{equal}", (arr[mid] != target ? "not" : ""))
-            .replace("{lessEqual}", (lo > hi ? "not" : ""))
-            .replace("{less}", (arr[mid] > target ? "not" : ""));
+        .replace("{right}", hi)
+        .replace("{mid}", mid)
+        .replace("{val}", arr[mid])
+        .replace("{target}", target)
+        .replace("{equal}", (arr[mid] != target ? "not" : ""))
+        .replace("{lessEqual}", (lo > hi ? "not" : ""))
+        .replace("{less}", (arr[mid] > target ? "not" : ""));
     
     actionLog.textContent = formatted;
     outputTerminal.append(actionLog);
@@ -492,10 +485,6 @@ function updateWarnings(inputValue, warning_container){
     return activeWarnings.length;
 }
 
-function cntWarnings(){
-
-}
-
 function parseNumberArray(input){
     const arr = splitInputIntoParts(input).filter(part => part !== "");
     return arr.map(part => {
@@ -557,7 +546,13 @@ function displayArray(
         rmDuplicates
     );
 
-    for(let i = 0; i < prepared_array.length; i++){
+    let size = prepared_array.length;
+    if(size > 50){ 
+        console.warn(`displayArray: array length exceeded 50 elements`);
+        size = 50;
+    }
+
+    for(let i = 0; i < size; i++){
         const val = prepared_array[Number(i)];
         if(isNaN(val)) throw new Error("displayArray: input includes an element that is not a number");
 
@@ -685,7 +680,6 @@ function resetBtnClick(
 
 /* Generates a random array for the standard binary search simulation
  */
-
 function randomBtnClick(
     display,
     array,
@@ -715,12 +709,155 @@ function randomBtnClick(
     }
 }
 
-
+//selfexplanatory
 function stopVisualisation(controller){
     if(controller){
         controller.abort();
         controller = null;
     }
+}
+
+//used to benchmark user code against large inputs
+function generateSortedArray(size){
+    const arr = new Array(size);
+    for(let i = 0; i < size; i++){
+        arr[i] = Math.floor((Math.random() * size));
+        arr[i] *= (Math.random() < 0.5 ? -1 : 1);
+    }
+    arr.sort((a,b) => a - b);
+    return arr;
+}
+
+/**Tests user's code against a variety of test cases to determine the issue with the code
+ * 
+ * 
+ */
+async function submitBtnClick(editor){
+    const boilerplate = 
+    `
+    import json
+    import math
+    import time
+    import traceback
+
+    def testUserCode(user_code, test_cases_json):
+        test_cases = json.loads(test_cases_json)
+        scope = {} #pls dont change this my application will crash
+        try:
+            exec(user_code, scope)
+        except Exception as error:
+            return json.dumps({
+                "status": "EXECUTION_ERROR",
+                "error": str(error),
+                "traceback": traceback.format_exc()
+            })
+
+        binary_search = scope.get("binary_search")
+        if not callable(binary_search):
+            return json.dumps({
+                "status": "EXECUTION_ERROR",
+                "error": "You didn't define the function",
+                "traceback": traceback.format_exc()
+            })
+
+        results = []
+
+        for test in test_cases:
+            start_time = time.perf_counter()
+
+            arr = test["array"]
+            target = test["target"]
+            expected = test["expected"]
+
+            user_result = None
+            try:
+                user_result = binary_search(arr, target)
+                result = "AC" if (user_result == expected) else "WA"
+            except Exception:
+                result = "RE"
+
+            end_time = time.perf_counter()
+            runtime_seconds = (end_time - start_time)
+            
+            results.append({
+                "status": result,
+                "type": test.get("type", []),
+                "expected": expected,
+                "got": user_result,
+                "time": runtime_seconds
+            })
+
+        #now the time complexity
+        allowed_ms = 20
+        benchmark_results = []
+        for test_case in benchmarking_arrays:
+            test = test_case.to_py()
+            arr = test["array"]
+            target = test["target"]
+
+            start_time = time.perf_counter()
+            try:
+                user_result = binary_search(arr, target)
+                runtime_seconds = time.perf_counter() - start_time
+
+                correct = (user_result is not None and 0 <= user_result < len(arr) and arr[user_result] == target)
+                runtime_ms = runtime_seconds * 1000
+                if not correct:
+                    result = "WA"
+                elif runtime_ms > allowed_ms:
+                    result = "TLE"
+                else:
+                    result = "AC"
+
+            except Exception:
+                result = "RE"
+                runtime_seconds = None
+            
+            benchmark_results.append({
+                "size": len(arr),
+                "status": result,
+                "runtime_ms": round(runtime_seconds * 1000, 3) if runtime_seconds is not None else None
+            })    
+                
+        return json.dumps({
+            "status": "works",
+            "tests": results,
+            "benchmarks": benchmark_results
+        })
+
+    testUserCode(user_code, test_cases_json)
+    `
+    ;
+    const panel = document.createElement("div");
+    panel.className = "container";
+    const user_code = String(editor.getValue());
+
+    const data = await fetch(`/tests.json`);
+    const test_cases_json = await data.text();
+
+    pyodide.globals.set("user_code", user_code);
+    pyodide.globals.set("test_cases_json", test_cases_json);
+
+    let benchmarking_arrays = [];
+    for(let size = 1; size <= 6; size++){
+        let true_size = 10;
+        for(let i = 1; i <= size; i++) true_size *= 10;
+        const arr = generateSortedArray(true_size);
+        const target = arr[Math.floor(Math.random() * arr.length)];
+        benchmarking_arrays.push({
+            "array": arr,
+            "target": target
+        });
+    }
+    pyodide.globals.set("benchmarking_arrays", benchmarking_arrays);
+    
+    const raw_results = JSON.parse(await pyodide.runPythonAsync(boilerplate));
+    if(!Array.isArray(raw_results) && raw_results.status === `EXECUTION_ERROR`){
+        console.error(`submitBtnClick: syntax or definition error`, raw_results.error);
+        return;
+    }
+    console.log(`All test results`, raw_results);
+    
 }
 
 async function initExplanationSection(main_panel){
@@ -927,6 +1064,10 @@ async function initExplanationSection(main_panel){
             standard_bs_simulation_input_array.value,
             standard_bs_simulation_input_array_warnings
         );
+        input_target_warnings = updateWarnings(
+            standard_bs_simulation_target_array.value,
+            standard_bs_simulation_target_array_warnings
+        );
     });
 
     standard_bs_simulation_randomBtn.addEventListener("click", () => {
@@ -953,6 +1094,7 @@ async function initExplanationSection(main_panel){
         }
         if(standard_bs_simulation_running){
             stopVisualisation(stopAnimationController);
+            outputAction(standard_bs_simulation_output, "STOPPED", [], 0, 0, 0, 0);
         }
     });
 
@@ -976,8 +1118,7 @@ async function initExplanationSection(main_panel){
  */
 async function initTryoutSection(main_panel){
     const tryout_section = document.querySelector("#tryout_section");
-    
-    const tryout_editor_language = document.querySelector("#tryout_editor_language");
+
     const tryout_template_python = await getText("tryout_template_python");
     const tryout_editor = createEditor(
         "tryout_editor",
@@ -986,8 +1127,21 @@ async function initTryoutSection(main_panel){
         tryout_template_python
     );
 
-    tryout_editor_language.addEventListener("change", (element) => {
-        switchLanguage(tryout_editor, "tryout_template_", element.target.value);
+    let submission_running = false;
+    const tryout_simulation_submitBtn = document.querySelector("#tryout_simulation_submitBtn");
+    tryout_simulation_submitBtn.addEventListener("click", async () => {   
+        if(submission_running){
+            console.warn(`Please wait until the current submission is finished`);
+            return;
+        }
+
+        try{
+            await submitBtnClick(tryout_editor);
+        } catch(error){
+            console.error(error.message);
+        } finally{
+            submission_running = false;
+        }
     });
 
     main_panel.append(tryout_section);

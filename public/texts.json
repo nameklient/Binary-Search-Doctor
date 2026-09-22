@@ -105,7 +105,7 @@
         "id": "standard_bs_event_RETURN_MID",
         "title": "RETURN_MID",
         "language": "English",
-        "text": "returning {mid}"
+        "text": "{target} found at index {mid}"
     },
     {
         "id": "standard_bs_event_ELSEIF",
@@ -136,6 +136,12 @@
         "title": "RETURN_NEG",
         "language": "English",
         "text": "{target} not found"
+    },
+    {
+        "id": "standard_bs_event_STOPPED",
+        "title": "STOPPED",
+        "language": "English",
+        "text": "stopped execution"
     },
     {
         "id": "tryout_template_python",

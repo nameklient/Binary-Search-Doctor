@@ -579,6 +579,7 @@ button:focus-visible {
 ---------------------------------- */
 .output_string{
     color: rgb(255, 255, 255);
+    margin: 2px 2px;
 }
 
 .outputTerminal{
